@@ -1,0 +1,10 @@
+pandas
+numpy
+matplotlib
+nltk
+tensorflow
+pillow
+huggingface-hub
+datasets
+wandb
+ipykernel
