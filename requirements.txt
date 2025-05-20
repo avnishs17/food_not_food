@@ -1,5 +1,6 @@
 pandas
 numpy
+notebook
 matplotlib
 nltk
 tensorflow
@@ -7,4 +8,17 @@ pillow
 huggingface-hub
 datasets
 wandb
+dvc
 ipykernel
+python-box==6.0.2
+tqdm
+pyYAML
+ensure==1.0.2
+joblib
+types-pyYAML
+scipy
+Flask
+Flask-Cors
+python-dotenv
+kaggle
+-e .

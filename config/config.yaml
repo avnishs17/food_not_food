@@ -1,0 +1,7 @@
+artifacts_root: artifacts
+
+data_ingestion:
+  root_dir: artifacts/data_ingestion
+  dataset_name: avnishs17/food-and-not-food
+  local_data_file: artifacts/data_ingestion/food_and_not_food.zip
+  unzip_dir: artifacts/data_ingestion
