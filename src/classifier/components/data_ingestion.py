@@ -1,6 +1,7 @@
 import os
 import zipfile
 from dotenv import load_dotenv
+from pathlib import Path
 from classifier import logger
 from classifier.utils.common import get_size
 from classifier.entity.config_entity import DataIngestionConfig
@@ -28,7 +29,7 @@ class DataIngestion:
             os.rename(downloaded_zip_path, self.config.local_data_file)
             logger.info(f"Downloaded and renamed to: {self.config.local_data_file}")
         else:
-            logger.info(f"File already exists of size: {get_size(self.config.local_data_file)}")
+            logger.info(f"File already exists of size: {get_size(Path(self.config.local_data_file))}")
 
     def extract_zip_file(self):
         os.makedirs(self.config.unzip_dir, exist_ok=True)
