@@ -1,7 +1,6 @@
 .gitignore
 artifacts/*
 code/*
-.jpg
 gentle-waters-459210-d0-0eec84cc1346.json
 # Byte-compiled / optimized / DLL files
 __pycache__/

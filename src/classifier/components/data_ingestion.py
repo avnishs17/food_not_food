@@ -7,6 +7,8 @@ from classifier.utils.common import get_size
 from classifier.entity.config_entity import DataIngestionConfig
 
 load_dotenv()
+KAGGLE_USERNAME = os.getenv("KAGGLE_USERNAME")
+KAGGLE_KEY = os.getenv("KAGGLE_KEY")
 from kaggle.api.kaggle_api_extended import KaggleApi
 
 class DataIngestion:
