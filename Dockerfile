@@ -1,9 +1,20 @@
-FROM python:3.10-slim-buster
+FROM python:3.10-slim-bookworm
 
-RUN apt update -y && apt install awscli -y
+# Ensure all system packages are up to date to reduce vulnerabilities
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y awscli && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory
 WORKDIR /app
 
+# Copy the rest of the application code
 COPY . /app
-RUN pip install -r requirements.txt
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
+
+
+# Default command to run the app
 CMD ["python3", "app.py"]
