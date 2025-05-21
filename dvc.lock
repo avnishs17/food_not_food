@@ -1,0 +1,117 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python src/classifier/pipeline/stage_01_data_ingestion.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 8ef03f0179c7ac74cff990dd60a94b5b
+      size: 768
+    - path: src/classifier/pipeline/stage_01_data_ingestion.py
+      hash: md5
+      md5: 70decac04cd0bb0192e66e215667b481
+      size: 921
+    outs:
+    - path: artifacts/data_ingestion/food_not_food
+      hash: md5
+      md5: a0e5456e8593a464ecc4201dba022596.dir
+      size: 293102651
+      nfiles: 8002
+  prepare_base_model:
+    cmd: python src/classifier/pipeline/stage_02_prepare_base_model.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 8ef03f0179c7ac74cff990dd60a94b5b
+      size: 768
+    - path: src/classifier/pipeline/stage_02_prepare_base_model.py
+      hash: md5
+      md5: 503b7a57913052f87798e8919e7a5669
+      size: 986
+    params:
+      params.yaml:
+        CLASSES: 2
+        IMAGE_SIZE:
+        - 224
+        - 224
+        - 3
+        INCLUDE_TOP: false
+        LEARNING_RATE: 0.01
+        WEIGHTS: imagenet
+    outs:
+    - path: artifacts/prepare_base_model
+      hash: md5
+      md5: 367b8a4c0fab57019f6d8c59eb8f03c3.dir
+      size: 118059248
+      nfiles: 2
+  training:
+    cmd: python src/classifier/pipeline/stage_03_training.py
+    deps:
+    - path: artifacts/data_ingestion/food_not_food
+      hash: md5
+      md5: a0e5456e8593a464ecc4201dba022596.dir
+      size: 293102651
+      nfiles: 8002
+    - path: artifacts/prepare_base_model
+      hash: md5
+      md5: 367b8a4c0fab57019f6d8c59eb8f03c3.dir
+      size: 118059248
+      nfiles: 2
+    - path: config/config.yaml
+      hash: md5
+      md5: 8ef03f0179c7ac74cff990dd60a94b5b
+      size: 768
+    - path: src/classifier/components/prepare_callbacks.py
+      hash: md5
+      md5: b25725452f64da8d14c7f08fc084fdd8
+      size: 1008
+    - path: src/classifier/pipeline/stage_03_training.py
+      hash: md5
+      md5: e6a896506d1410c258a9256b6eb660e7
+      size: 1254
+    params:
+      params.yaml:
+        AUGMENTATION: true
+        BATCH_SIZE: 16
+        EPOCHS: 1
+        IMAGE_SIZE:
+        - 224
+        - 224
+        - 3
+    outs:
+    - path: artifacts/training/model.h5
+      hash: md5
+      md5: 6a84b6bdd4c13c76a8bc6b99070ee8ef
+      size: 59340720
+  evaluation:
+    cmd: python src/classifier/pipeline/stage_04_evaluation.py
+    deps:
+    - path: artifacts/data_ingestion/food_not_food
+      hash: md5
+      md5: a0e5456e8593a464ecc4201dba022596.dir
+      size: 293102651
+      nfiles: 8002
+    - path: artifacts/training/model.h5
+      hash: md5
+      md5: 6a84b6bdd4c13c76a8bc6b99070ee8ef
+      size: 59340720
+    - path: config/config.yaml
+      hash: md5
+      md5: 8ef03f0179c7ac74cff990dd60a94b5b
+      size: 768
+    - path: src/classifier/pipeline/stage_04_evaluation.py
+      hash: md5
+      md5: aed171139dc3f3d0daf82e3403c6754b
+      size: 874
+    params:
+      params.yaml:
+        BATCH_SIZE: 16
+        IMAGE_SIZE:
+        - 224
+        - 224
+        - 3
+    outs:
+    - path: scores.json
+      hash: md5
+      md5: 47d056bac6ed77874bc0c77e26043de7
+      size: 73
