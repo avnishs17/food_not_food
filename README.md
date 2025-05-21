@@ -98,13 +98,7 @@ To initialize dvc after creating dvc.yaml and run the whole pipeline through dvc
    sudo usermod -aG docker ubuntu
    newgrp docker
    ```
-7. Configure EC2 as self-hosted runner:
-
-   - Go to GitHub repository
-   - Settings > Actions > Runners > New self-hosted runner
-   - Choose OS
-   - Run the commands provided by GitHub one by one
-8. Setup GitHub secrets:
+7. Setup GitHub secrets:
 
    ```
    AWS_ACCESS_KEY_ID=
@@ -113,11 +107,16 @@ To initialize dvc after creating dvc.yaml and run the whole pipeline through dvc
    AWS_ECR_LOGIN_URI = XXXXXXXXXXXX.dkr.ecr.us-east-1.amazonaws.com
    ECR_REPOSITORY_NAME = food_not_food
    ```
+8. Configure EC2 as self-hosted runner:
 
-### Deployment Flow
+   - Go to GitHub repository
+   - Settings > Actions > Runners > New self-hosted runner
+   - Choose OS
+   - Run the commands provided by GitHub one by one
 
-1. Build docker image of the source code
-2. Push your docker image to ECR
-3. Launch Your EC2
-4. Pull Your image from ECR in EC2
-5. Launch your docker image in EC2
+
+9. Push Dockerfile to github repo
+``` 
+- ./run.sh command given runner setting should running in aws cli instance
+-
+
