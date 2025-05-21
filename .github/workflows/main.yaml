@@ -1,0 +1,98 @@
+name: workflow
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  integration:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Lint code
+        run: echo "Linting repository"
+      - name: Run unit tests
+        run: echo "Running unit tests"
+
+  build-and-push-gcr-image:
+    name: Continuous Delivery
+    needs: integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Install Utilities
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq unzip
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+      
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+      
+      - name: Build, tag, and push image to Google Artifact Registry
+        id: build-image
+        env:
+          GCP_REGISTRY: ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}
+          GCP_REPOSITORY: ${{ secrets.ARTIFACT_REGISTRY_REPO }}
+          IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+          IMAGE_TAG: latest
+        run: |
+          # Build a docker container and
+          # push it to Artifact Registry
+          docker build -t $GCP_REGISTRY/$GCP_REPOSITORY/$IMAGE_NAME:$IMAGE_TAG .
+          docker push $GCP_REGISTRY/$GCP_REPOSITORY/$IMAGE_NAME:$IMAGE_TAG
+          echo "image=$GCP_REGISTRY/$GCP_REPOSITORY/$IMAGE_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          
+  Continuous-Deployment:
+    needs: build-and-push-gcr-image
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+      
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+      
+      - name: Pull latest images
+        run: |
+          docker pull ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.IMAGE_NAME }}:latest
+         
+      # Uncomment if you want to stop existing container
+      # - name: Stop and remove container if running
+      #   run: |
+      #     docker ps -q --filter "name=cnncls" | grep -q . && docker stop cnncls && docker rm -fv cnncls || true
+       
+      - name: Run Docker Image to serve users
+        run: |
+          docker run -d -p 8080:8080 --name=classifier \
+          -e "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json" \
+          -e "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" \
+          -e "GCP_REGION=${{ secrets.GCP_REGION }}" \
+          ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.IMAGE_NAME }}:latest
+      
+      - name: Clean previous images and containers
+        run: |
+          docker system prune -f
