@@ -118,5 +118,6 @@ To initialize dvc after creating dvc.yaml and run the whole pipeline through dvc
 9. Push Dockerfile to github repo
 ``` 
 - ./run.sh command given runner setting should running in aws cli instance
--
+- You can check github repo actions page for status.
+```
 
