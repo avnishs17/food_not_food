@@ -4,7 +4,8 @@ from classifier.utils.common import read_yaml, create_directories
 from classifier.entity.config_entity import (DataIngestionConfig,
                                              PrepareBaseModelConfig,
                                              PrepareCallbacksConfig,
-                                             TrainingConfig)
+                                             TrainingConfig,
+                                             EvaluationConfig)
 
 class ConfigurationManager:
     def __init__(
@@ -16,6 +17,7 @@ class ConfigurationManager:
         self.params = read_yaml(params_filepath)
 
         create_directories([self.config.artifacts_root])
+
 
     def get_data_ingestion_config(self) -> DataIngestionConfig:
         config = self.config.data_ingestion
@@ -65,6 +67,7 @@ class ConfigurationManager:
 
         return prepare_callback_config
     
+
     def get_training_config(self) -> TrainingConfig:
         training = self.config.training
         prepare_base_model = self.config.prepare_base_model
@@ -86,3 +89,14 @@ class ConfigurationManager:
         )
 
         return training_config
+    
+
+    def get_validation_config(self) -> EvaluationConfig:
+        eval_config = EvaluationConfig(
+            path_of_model=Path("artifacts/training/model.h5"),
+            training_data=Path("artifacts/data_ingestion/food_not_food"),
+            all_params=self.params,
+            params_image_size=self.params.IMAGE_SIZE,
+            params_batch_size=self.params.BATCH_SIZE
+        )
+        return eval_config
